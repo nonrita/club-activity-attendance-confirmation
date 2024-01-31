@@ -1,0 +1,52 @@
+version: '3.8'
+services:
+  api:
+    container_name: club-activity-attendance-confirmation-api
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    user: "node"
+    tty: true
+    init: true
+    volumes:
+      - ./api:/home/node/api
+    ports:
+      - "3000:3000"
+    networks:
+      mynetwork:
+        ipv4_address: 172.16.0.11 # 任意の固定IPアドレス
+  
+  db:
+    container_name: club-activity-attendance-confirmation-db
+    build:
+      context: ./db
+      dockerfile: Dockerfile
+    environment:
+      - MYSQL_ROOT_HOST=${DB_ROOT_HOST}
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASS}
+      - MYSQL_ROOT_PASSWORD=${DB_PASS}
+      - TZ=${TZ}
+    ports:
+      - ${DB_PORT}:3306
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./db/conf/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./db/logs/:/var/log/mysql/
+      - ./db/init:/docker-entrypoint-initdb.d
+    networks:
+      mynetwork:
+        ipv4_address: 172.16.0.12 # 任意の固定IPアドレス
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  mynetwork:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.16.0.0/24
