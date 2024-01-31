@@ -1,0 +1,1 @@
+# club-activity-attendance-confirmation
